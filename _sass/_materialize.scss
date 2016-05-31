@@ -1,6 +1,6 @@
 nav {
-  background: #fff !important;
-  width: 100%;
+  background: $background-color !important;
+  height: 56px;
 
   box-shadow: none !important;
 
@@ -8,6 +8,8 @@ nav {
   max-width:         calc(#{$content-width} - (#{$spacing-unit} * 2));
   margin-right: auto;
   margin-left: auto;
+  padding-right: 10px;
+  padding-left: 10px;
 }
 
 @media only screen and (min-width: 601px) {

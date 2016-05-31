@@ -208,3 +208,9 @@ pre {
 .language-switcher {
   margin-left: 10px;
 }
+
+.clean-list {
+  li {
+    list-style-type: none !important;
+  }
+}
