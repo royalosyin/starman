@@ -4,15 +4,15 @@
       <a class='site-title' href='{{ site.baseurl }}/'>{{ site.title }}</a>
       {% if page.lang == 'zh' %}
         {% if page.permalink == '/' %}
-          <a class='language-switcher' href='/en'>English</a>
+          <a class='language-switcher' href='{{ site.baseurl }}/en'>English</a>
         {% else %}
-          <a class='language-switcher' href='{{ page.permalink | replace: 'zh', 'en' }}'>English</a>
+          <a class='language-switcher' href='{{ site.baseurl }}/{{ page.permalink | replace: 'zh', 'en' }}'>English</a>
         {% endif %}
       {% elsif page.lang == 'en' %}
         {% if page.permalink == '/en' %}
-          <a class='language-switcher' href='/'>中文</a>
+          <a class='language-switcher' href='{{ site.baseurl }}/'>中文</a>
         {% else %}
-          <a class='language-switcher' href='{{ page.permalink | replace: 'en', 'zh' }}'>中文</a>
+          <a class='language-switcher' href='{{ site.baseurl }}/{{ page.permalink | replace: 'en', 'zh' }}'>中文</a>
         {% endif %}
       {% endif %}
       <ul class='right hide-on-med-and-down'>

@@ -12,7 +12,7 @@ description: > # this means to ignore newlines until "baseurl:"
   STARMAN is a cross-platform package manager written in Ruby. It provides
   precompiled packages for different OS (e.g., Ubuntu, Mac OS X), and unified
   interfaces to use them.
-baseurl: ''
+baseurl: '/starman'
 github_username:  dongli
 timezone: Asia/Shanghai
 
