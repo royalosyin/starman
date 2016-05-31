@@ -1,1 +1,60 @@
-Hello world!
+---
+layout: default
+lang: zh
+permalink: /
+---
+
+<div class="home">
+
+  <h1 class='page-heading'>介绍</h1>
+  <p>
+    STARMAN是一个期望将您从繁杂的软件包安装、系统管理的日常事务中解脱出来的工具，使您能够快速安装需要的依赖包，并专注于待解决问题本身。
+    STARMAN使用Ruby语言编写，并尽可能将复杂的软件包安装流程抽象化，提供好用的DSL，这一点学习了<a href='http://brew.sh'>Homebrew</a>中的Formula，但是进一步增强。
+  </p>
+  <p>
+    <pre>
+module STARMAN
+  class Hdf5 < Package
+    homepage 'http://www.hdfgroup.org/HDF5'
+    url 'https://www.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8.16/src/hdf5-1.8.16.tar.bz2'
+    sha256 '13aaae5ba10b70749ee1718816a4b4bfead897c2fcb72c24176e759aec4598c6'
+    version '1.8.16'
+
+    option 'with-mpi', {
+      :desc => 'Build with parallel IO. MPI library is needed.',
+      :accept_value => { :boolean => false }
+    }
+    ...
+    option 'with-fortran', {
+      :desc => 'Build Fortran API bindings.',
+      :accept_value => { :boolean => true }
+    }
+    ...
+
+    depends_on :szip
+    depends_on :zlib
+    depends_on :mpi if with_mpi?
+
+    ...
+  end
+end
+    </pre>
+  </p>
+
+  <h1 class="page-heading">新闻</h1>
+
+  <ul class="post-list">
+    {% for post in site.posts %}
+      <li>
+        <span class="post-meta">{{ post.date | date: "%b %-d, %Y" }}</span>
+
+        <h2>
+          <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
+        </h2>
+      </li>
+    {% endfor %}
+  </ul>
+
+  <p class="rss-subscribe">通过RSS订阅<a href="{{ "/feed.xml" | prepend: site.baseurl }}"></a></p>
+
+</div>

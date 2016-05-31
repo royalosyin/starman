@@ -1,0 +1,22 @@
+nav {
+  background: #fff !important;
+  width: 100%;
+
+  box-shadow: none !important;
+
+  max-width: -webkit-calc(#{$content-width} - (#{$spacing-unit} * 2));
+  max-width:         calc(#{$content-width} - (#{$spacing-unit} * 2));
+  margin-right: auto;
+  margin-left: auto;
+}
+
+@media only screen and (min-width: 601px) {
+  nav, nav .nav-wrapper i, nav a.button-collapse, nav a.button-collapse i {
+    height: 100% !important;
+    line-height: 3.2 !important;
+  }
+
+  .navbar-fixed {
+    height: 100% !important;
+  }
+}

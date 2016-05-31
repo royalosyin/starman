@@ -1,0 +1,27 @@
+<header class='site-header'>
+  <nav>
+    <div class='nav-wrapper'>
+      <a class='site-title' href='{{ site.baseurl }}/'>{{ site.title }}</a>
+      {% if page.lang == 'zh' %}
+        {% if page.permalink == '/' %}
+          <a class='language-switcher' href='/en'>English</a>
+        {% else %}
+          <a class='language-switcher' href='{{ page.permalink | replace: 'zh', 'en' }}'>English</a>
+        {% endif %}
+      {% elsif page.lang == 'en' %}
+        {% if page.permalink == '/en' %}
+          <a class='language-switcher' href='/'>中文</a>
+        {% else %}
+          <a class='language-switcher' href='{{ page.permalink | replace: 'en', 'zh' }}'>中文</a>
+        {% endif %}
+      {% endif %}
+      <ul class='right hide-on-med-and-down'>
+        {% for my_page in site.pages %}
+          {% if my_page.title and my_page.lang == page.lang %}
+            <li><a class='page-link' href='{{ my_page.url | prepend: site.baseurl }}'>{{ my_page.title }}</a></li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    </div>
+  </nav>
+</header>
