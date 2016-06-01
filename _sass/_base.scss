@@ -85,6 +85,9 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: $base-font-weight;
 }
 
+h6 {
+  font-size: 18px !important;
+}
 
 
 /**
@@ -213,4 +216,8 @@ pre {
   li {
     list-style-type: none !important;
   }
+}
+
+pre {
+  max-height: 300px;
 }

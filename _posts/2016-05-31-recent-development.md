@@ -62,3 +62,7 @@ permalink: /2016-05-31/recent-development/
   :sha256: d6307bf9a59514087abac3cbaab3d99393a0abb519354f7e7834a8c842310daa
   :options: {}
 ```
+
+### 补充 2016-06-01:
+
+目前的做法是采用软件包的默认选项，如果STARMAN发现软件包的prefix不存在，则提示用户指定相应的参数。
