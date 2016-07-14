@@ -8,7 +8,7 @@ permalink: /2016-07-14/use-tree-based-range-search-in-mlpack/
 
 [MLPACK](http://www.mlpack.org)是一个使用C++编写的机器学习算法库，提供了多种算法，其中邻居搜索是我比较关心的。由于采用C++模板设计程序实现，MLPACK中的同一类算法都采用相同的接口，大大方便不同算法的切换。下面是我对其中基于树形数据结构的邻居搜索算法的示例：
 
-```
+```c++
 #include <mlpack/core.hpp>
 #include <mlpack/core/tree/rectangle_tree.hpp>
 #include <mlpack/core/tree/cover_tree.hpp>
