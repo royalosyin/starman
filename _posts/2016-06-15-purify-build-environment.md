@@ -3,7 +3,7 @@ layout: post
 title: 保证编译环境的纯净
 author: 董理
 lang: zh
-permalink: /2016-05-31/problem-with-rpath-on-os-x/
+permalink: /2016-06-15/problem-with-rpath-on-os-x/
 ---
 
 我已经在Mac OS X 10.11上编译好了GCC 6.1.0，但是遇到一个很诡异的问题，虽然有绕过的方法。

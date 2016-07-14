@@ -10,6 +10,20 @@ permalink: /
     STARMAN仍然处于内部开发阶段，请您酌情考虑使用！
   </div>
 
+  <h1 class="page-heading">新闻</h1>
+
+  <ul class="post-list">
+    {% for post in site.posts %}
+      <li>
+        <span class="post-meta">{{ post.date | date: "%Y-%m-%d" }}</span>
+
+        <h6 style='display: inline-block;'>
+          <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
+        </h6>
+      </li>
+    {% endfor %}
+  </ul>
+
   <h1 class='page-heading'>介绍</h1>
   <p>
     STARMAN是一个期望将你从繁杂的软件包安装、系统管理的日常事务中解脱出来的工具，使你能够快速安装需要的依赖包，并专注于待解决问题本身。
@@ -45,20 +59,6 @@ end
     </pre>
     我还在不断地设计完善中，如果你很感兴趣可以参与其中！
   </p>
-
-  <h1 class="page-heading">新闻</h1>
-
-  <ul class="post-list">
-    {% for post in site.posts %}
-      <li>
-        <span class="post-meta">{{ post.date | date: "%Y-%m-%d" }}</span>
-
-        <h6 style='display: inline-block;'>
-          <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
-        </h6>
-      </li>
-    {% endfor %}
-  </ul>
 
   <p class="rss-subscribe">通过<a href="{{ "/feed.xml" | prepend: site.baseurl }}">RSS订阅</a></p>
 

@@ -3,7 +3,7 @@ layout: post
 title: OS X上的RPATH问题
 author: 董理
 lang: zh
-permalink: /2016-05-31/problem-with-rpath-on-os-x/
+permalink: /2016-06-02/problem-with-rpath-on-os-x/
 ---
 
 我已经在Mac OS X 10.11上编译好了GCC 6.1.0，但是遇到一个很诡异的问题，虽然有绕过的方法。
