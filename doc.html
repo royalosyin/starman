@@ -7,27 +7,41 @@ permalink: /doc/zh
 
 <div class='caution'>文档还很简陋，如果你感兴趣可以帮忙维护！</div>
 
+<h5>设置bash环境</h5>
 <p>
-  配置STARMAN：
+<pre>
+cd &lt;starman目录&gt;
+./setup.sh
+</pre>
 
+  <code>setup.sh</code>脚本将检查系统中的Ruby是否存在，以及版本是否满足要求（>= 2.0.0），然后在<code>~/.bashrc</code>添加设置语句。
+</p>
+
+<h5>配置STARMAN</h5>
+<p>
 <pre>
 starman config
 </pre>
 
-  安装软件包：
+  主要修改<code>package_root</code>和<code>install_root</code>（注：如果设在<code>/opt/starman/packages</code>和<code>/opt/starman/software</code>，可以直接使用已经预编译的软件包，省去自己编译），以及设置编译器集合。
+</p>
 
+<h5>安装软件包</h5>
+<p>
 <pre>
 starman install <package name>
 </pre>
+</p>
 
-  生成软件包shell配置文件：
-
+<h5>生成软件包shell配置文件</h5>
+<p>
 <pre>
 starman shell -update-config [package options]
 </pre>
+</p>
 
-  进入软件包环境：
-
+<h5>进入软件包环境</h5>
+<p>
 <pre>
 starman shell
 </pre>
