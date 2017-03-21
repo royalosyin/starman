@@ -16,7 +16,7 @@ module STARMAN
         }
       end
 
-      def self.run
+      def self.__run__
         if CommandLine.options[:'compiler-set'].value == -1
           CommandLine.options[:'compiler-set'].check ConfigStore.defaults[:compiler_set_index]
         end
@@ -32,9 +32,11 @@ module STARMAN
             next if package.has_label? :system_conflict
             System::Shell.prepend 'PATH', package.bin, separator: ':', system: true if Dir.exist? package.bin
             System::Shell.prepend 'MANPATH', package.man, separator: ':', system: true if Dir.exist? package.man
-            System::Shell.prepend OS.ld_library_path, package.lib, separator: ':', system: true if Dir.exist? package.lib
+            System::Shell.prepend OS.ld_library_path, package.lib, separator: ':', system: true if Dir.exist? package.lib and not package.has_label? :system_conflict
             System::Shell.prepend 'PKG_CONFIG_PATH', package.pkg_config, separator: ':', system: true if Dir.exist? package.pkg_config
             package.export_env
+            # Let slaves have opportunity to export their environment variables.
+            package.slaves.each(&:export_env) if package.has_label? :group_master
           end
           System::Shell.default_environment_variables
         else

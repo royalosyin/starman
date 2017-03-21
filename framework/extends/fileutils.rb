@@ -25,10 +25,31 @@ module FileUtils
     end
   end
 
+  alias_method :old_rm_r, :rm_r
+  def rm_r pattern, options = {}
+    old_rm_r Dir.glob(pattern), options
+  end
+
+  alias_method :old_rm_f, :rm_f
+  def rm_f pattern, options = {}
+    old_rm_f Dir.glob(pattern), options
+  end
+
   alias_method :old_cp, :cp
   def cp src, dst, options = {}
-    Dir.glob(src).each do |file|
-      old_cp file, dst
+    Array(src).each do |s|
+      Dir.glob(s).each do |file|
+        old_cp file, dst
+      end
+    end
+  end
+
+  alias_method :old_cp_r, :cp_r
+  def cp_r src, dst, options = {}
+    Array(src).each do |s|
+      Dir.glob(s).each do |file|
+        old_cp_r file, dst
+      end
     end
   end
 
@@ -54,11 +75,27 @@ module FileUtils
   end
 
   def work_in dir
-    CLI.report_error 'No work block is given!' if not block_given?
-    CLI.report_error "Directory #{CLI.red dir} does not exist!" if not Dir.exist? dir
+    STARMAN::CLI.report_error 'No work block is given!' if not block_given?
+    STARMAN::CLI.report_error "Directory #{STARMAN::CLI.red dir} does not exist!" if not Dir.exist? dir
     cd dir
     yield
     cd :back
+  end
+
+  def append_file file_path, content = nil, &block
+    dir = File.dirname file_path
+    mkdir_p dir if not Dir.exist? dir
+    if File.exist? file_path
+      file = File.open file_path, 'a'
+    else
+      file = File.new file_path, 'w'
+    end
+    if block_given?
+      content ||= ''
+      yield content
+    end
+    file << content
+    file.close
   end
 
   def write_file file_path, content = nil, &block
@@ -73,10 +110,12 @@ module FileUtils
     file.close
   end
 
-  def inreplace file_paths, before, after = nil
+  def inreplace file_paths, before = nil, after = nil, &block
     Array(file_paths).each do |file_path|
       content = File.read(file_path)
-      if before.class == Hash and not after
+      if block_given?
+        block.call content
+      elsif before.class == Hash and not after
         before.each do |key, value|
           content.gsub! key, value
         end

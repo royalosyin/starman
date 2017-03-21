@@ -7,10 +7,23 @@ module STARMAN
 
     label :compiler_agnostic
 
+    option 'with-berkeleydb4', {
+      desc: 'Build Berkeleydb4 support.',
+      accept_value: { boolean: false }
+    }
+
+    option 'with-sqlite', {
+      desc: 'Build Sqlite support.',
+      accept_value: { boolean: false }
+    }
+
+    depends_on :berkeleydb4 if with_berkeleydb4?
+    depends_on :bzip2
     depends_on :readline
     depends_on :openssl
-    depends_on :berkeleydb4
-    depends_on :sqlite
+    depends_on :sqlite if with_sqlite?
+    depends_on :xz
+    depends_on :zlib
 
     resource :setuptools do
       url 'https://files.pythonhosted.org/packages/9f/7c/0a33c528164f1b7ff8cf0684cf88c2e733c8ae0119ceca4a3955c7fc059d/setuptools-23.1.0.tar.gz'
@@ -32,8 +45,11 @@ module STARMAN
     def install
       # Unset these so that installing pip and setuptools puts them where we want
       # and not into some other Python the user has installed.
-      ENV["PYTHONHOME"] = nil
-      ENV["PYTHONPATH"] = nil
+      ENV['PYTHONHOME'] = nil
+      ENV['PYTHONPATH'] = nil
+      ENV['LC_CTYPE'] = 'en_US.UTF-8'
+
+      System::Shell.append 'LDFLAGS', "-Wl,-rpath,#{Openssl.lib}"
 
       args = %W[
         --prefix=#{prefix}
@@ -49,19 +65,34 @@ module STARMAN
         args << '--with-icc' if CompilerStore.compiler(:c).vendor == :intel
       end
 
-      args << "MACOSX_DEPLOYMENT_TARGET=#{OS.version.major_minor}"
+      if OS.mac?
+        # Matplotlib needs Python to be installed as framework for using macosx backend.
+        args << "--enable-framework=#{frameworks}"
+        args << "MACOSX_DEPLOYMENT_TARGET=#{OS.version.major_minor}"
+      else
+        args << '--enable-shared'
+      end
 
       inreplace 'setup.py', {
         "do_readline = self.compiler.find_library_file(lib_dirs, 'readline')" => "do_readline = '#{Readline.prefix}/libhistory.dylib'",
-        '/usr/local/ssl' => Openssl.prefix,
-        '/usr/include/db4' => Berkeleydb4.inc,
-        'sqlite_defines.append(("SQLITE_OMIT_LOAD_EXTENSION", "1"))' => '',
-        "sqlite_inc_paths = [ '/usr/include'" => "sqlite_inc_paths = [ '#{Sqlite.inc}'"
+        '/usr/local/ssl' => Openssl.prefix
       }
+      if with_berkeleydb4?
+        inreplace 'setup.py', {
+          '/usr/include/db4' => Berkeleydb4.inc
+        }
+      end
+      if with_sqlite?
+        inreplace 'setup.py', {
+          'sqlite_defines.append(("SQLITE_OMIT_LOAD_EXTENSION", "1"))' => 'pass',
+          "sqlite_inc_paths = [ '/usr/include'" => "sqlite_inc_paths = [ '#{Sqlite.inc}'"
+        }
+      end
 
       run './configure', *args
-
-      inreplace 'pyconfig.h', /.*?(HAVE_POLL[_A-Z]*).*/, '#undef \1'
+      inreplace 'pyconfig.h', '/* #undef HAVE_BROKEN_POLL */', '#define HAVE_BROKEN_POLL 1'
+      inreplace 'Modules/selectmodule.c', '#undef HAVE_BROKEN_POLL', ''
+      inreplace 'Makefile', 'CONFIGURE_LDFLAGS=', "CONFIGURE_LDFLAGS= -L#{Bzip2.lib} -L#{Zlib.lib} -L#{Readline.lib} -L#{Xz.lib}"
 
       run 'make'
       run 'make', 'install', "PYTHONAPPSDIR=#{prefix}"
@@ -73,6 +104,7 @@ module STARMAN
     end
 
     def post_install
+      System::Shell.append OS.ld_library_path, lib, separator: ':'
       # Install modules into persistent directory.
       site_packages = "#{persist}/lib/python2.7/site-packages"
       mkdir_p site_packages

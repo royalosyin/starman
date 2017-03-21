@@ -1,39 +1,51 @@
 module STARMAN
   class Ruby < Package
     homepage 'https://www.ruby-lang.org/'
-    url 'https://cache.ruby-lang.org/pub/ruby/2.3/ruby-2.3.1.tar.bz2'
-    sha256 '4a7c5f52f205203ea0328ca8e1963a7a88cf1f7f0e246f857d595b209eac0a4d'
-    version '2.3.1'
+    url 'https://cache.ruby-lang.org/pub/ruby/2.4/ruby-2.4.0.tar.gz'
+    sha256 '152fd0bd15a90b4a18213448f485d4b53e9f7662e1508190aa5b702446b29e3d'
+    version '2.4.0'
 
     def abi_version
-      '2.3.0'
+      '2.4.0'
     end
 
     label :compiler_agnostic
 
-    patch :DATA
-
-    depends_on :pkgconfig if needs_build?
-    depends_on :readline
     depends_on :gmp
     depends_on :libyaml
     depends_on :openssl
+    depends_on :pkgconfig if needs_build?
+    depends_on :readline
+    depends_on :zlib
 
     def export_env
       System::Shell.prepend 'PATH', "#{persist}/bin", separator: ':', system: true
     end
 
     def install
+      ENV.delete 'SDKROOT'
       args = %W[
         --prefix=#{prefix}
         --enable-shared
         --disable-silent-rules
-        --with-opt-dir=#{Readline.prefix}:#{Gmp.prefix}:#{Libyaml.prefix}:#{Openssl.prefix}
+        --with-sitedir=#{persist}/lib/ruby/site_ruby
+        --with-vendordir=#{persist}/lib/ruby/vendor_ruby
+        --with-opt-dir=#{Readline.prefix}:#{Gmp.prefix}:#{Libyaml.prefix}:#{Openssl.prefix}:#{Zlib.prefix}
       ]
       args << '--with-out-ext=tk'
       args << '--disable-install-doc'
 
       run './configure', *args
+
+      # These directories are empty on install; sitedir is used for non-rubygems
+      # third party libraries, and vendordir is used for packager-provided libraries.
+      inreplace 'tool/rbinstall.rb' do |s|
+        s.gsub! 'prepare "extension scripts", sitelibdir', ''
+        s.gsub! 'prepare "extension scripts", vendorlibdir', ''
+        s.gsub! 'prepare "extension objects", sitearchlibdir', ''
+        s.gsub! 'prepare "extension objects", vendorarchlibdir', ''
+      end
+
       run 'make'
       run 'make', 'install'
     end
@@ -108,40 +120,3 @@ module STARMAN
     end
   end
 end
-
-__END__
-From 2b41316953cdc92ab4d82b987bd1bf6870b2e752 Mon Sep 17 00:00:00 2001
-From: Misty De Meo <mistydemeo@gmail.com>
-Date: Mon, 28 Dec 2015 16:46:19 -0400
-Subject: [PATCH] Revert "mkconfig.rb: SDKROOT"
-
-This reverts commit e98f7ea423b08222b6eceda945613040c7b08a09.
----
- tool/mkconfig.rb | 5 -----
- 1 file changed, 5 deletions(-)
-
-diff --git a/tool/mkconfig.rb b/tool/mkconfig.rb
-index fdba709..ef9a4b0 100755
---- a/tool/mkconfig.rb
-+++ b/tool/mkconfig.rb
-@@ -131,8 +131,6 @@ def config.write(arg)
-       if universal
-         val.sub!(/universal/, %q[#{arch && universal[/(?:\A|\s)#{Regexp.quote(arch)}=(\S+)/, 1] || '\&'}])
-       end
--    when /^includedir$/
--      val = '"$(SDKROOT)"'+val if /darwin/ =~ arch
-     end
-     v = "  CONFIG[\"#{name}\"] #{eq} #{val}\n"
-     if fast[name]
-@@ -245,9 +243,6 @@ module RbConfig
-
- print(*v_fast)
- print(*v_others)
--print <<EOS if /darwin/ =~ arch
--  CONFIG["SDKROOT"] = ENV["SDKROOT"] || "" # don't run xcrun everytime, usually useless.
--EOS
- print <<EOS
-   CONFIG["archdir"] = "$(rubyarchdir)"
-   CONFIG["topdir"] = File.dirname(__FILE__)
---
-2.6.4

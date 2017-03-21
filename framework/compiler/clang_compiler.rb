@@ -10,8 +10,8 @@ module STARMAN
     language :cxx, command: 'clang++', default_flags: '-O2'
     flag :openmp => nil
     flag :pic => '-fPIC'
-    flag :libcxx => '-lc++'
-    flag :cxx11 => '-std=c++11 -stdlib=libc++'
+    flag :libcxx => '-stdlib=libc++'
+    flag :cxx11 => '-std=c++11'
     feature :openmp do
       false
     end

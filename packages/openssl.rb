@@ -1,10 +1,12 @@
 module STARMAN
   class Openssl < Package
     homepage 'https://openssl.org/'
-    url 'https://www.openssl.org/source/openssl-1.0.2h.tar.gz'
-    sha256 '1d4007e53aad94a5b2002fe045ee7bb0b3d98f1a47f8b2bc851dcd1c74332919'
-    version '1.0.2h'
+    url 'https://www.openssl.org/source/openssl-1.1.0d.tar.gz'
+    sha256 '7d5ebb9e89756545c156ff9c13cf2aa6214193b010a468a3bc789c3c28fe60df'
+    version '1.1.0d'
     language :c
+
+    label :system_conflict if OS.ubuntu?
 
     option 'x86-64', {
       desc: 'Build x86-64 library.',
@@ -12,6 +14,12 @@ module STARMAN
     }
 
     depends_on :zlib
+
+    resource :cert_file do
+      url 'http://curl.haxx.se/ca/cacert.pem'
+      sha256 'e62a07e61e5870effa81b430e1900778943c228bd7da1259dd6a955ee2262b47'
+      filename 'cert.pem'
+    end
 
     def arch_flags
       if OS.mac?
@@ -31,21 +39,22 @@ module STARMAN
       ]
       args << 'enable-ec_nistp_64_gcc_128' # Needs C compiler to support __uint128_t.
       inreplace 'crypto/comp/c_zlib.c',
-        'zlib_dso = DSO_load(NULL, "z", NULL, 0);',
+        'zlib_dso = DSO_load(NULL, LIBZ, NULL, 0);',
         "zlib_dso = DSO_load(NULL, \"#{Zlib.lib}/libz.#{OS.soname}\", NULL, DSO_FLAG_NO_NAME_TRANSLATION);"
       run './Configure', *args, arch_flags[x86_64? ? :x86_64 : :i386]
       inreplace 'Makefile', {
-        /^ZLIB_INCLUDE=/ => "ZLIB_INCLUDE=#{Zlib.inc}",
-        /^LIBZLIB=/ => "LIBZLIB=#{Zlib.lib}"
+        /^CFLAGS=/ => "CFLAGS=-I#{Zlib.inc} ",
+        /^LDFLAGS=/ => "LDFLAGS=-L#{Zlib.lib} "
       }
       run 'make'
-      run 'make', 'test' if not skip_test?
+      run 'make', 'test' unless skip_test?
       run 'make', 'install'
     end
 
     def post_install
-      valid_certs = []
+      mkdir_p "#{etc}/openssl"
       if OS.mac?
+        valid_certs = []
         keychains = %w[
           /System/Library/Keychains/SystemRootCertificates.keychain
         ]
@@ -62,9 +71,10 @@ module STARMAN
           end
           $?.success?
         end
+        write_file "#{etc}/openssl/cert.pem", valid_certs.join("\n")
+      else
+        cp resource(:cert_file).path, "#{etc}/openssl/"
       end
-      mkdir_p "#{etc}/openssl"
-      write_file "#{etc}/openssl/cert.pem", valid_certs.join("\n")
     end
   end
 end

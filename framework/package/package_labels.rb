@@ -3,7 +3,9 @@ module STARMAN
     Labels = [
       :compiler_agnostic,
       :external_binary,
-      :system_conflict
+      :system_conflict,
+      :parasite,
+      :system_first
     ].freeze
 
     def self.valid? label

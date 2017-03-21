@@ -1,5 +1,5 @@
 module STARMAN
-  class CentOS < Linux
+  class CentOS < RedHat
     type :centos
   end
 end

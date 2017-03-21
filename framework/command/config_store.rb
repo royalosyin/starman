@@ -35,6 +35,10 @@ module STARMAN
         @@config[:install_root] = File.expand_path @@config[:install_root]
         mkdir_p @@config[:package_root] if not Dir.exist? @@config[:package_root]
         mkdir_p @@config[:install_root] if not Dir.exist? @@config[:install_root]
+        if @@config[:defaults][:command_line_options]
+          ARGV.concat @@config[:defaults][:command_line_options].split || []
+          CommandLine.run
+        end
         set_compilers
       end
 
@@ -58,6 +62,18 @@ module STARMAN
       end
 
       def write_template file_path
+        if OS.mac?
+          default_compilers = {
+            'c' => '/usr/bin/clang',
+            'cxx' => '/usr/bin/clang++'
+          }
+        else
+          default_compilers = {
+            'c' => '/usr/bin/gcc',
+            'cxx' => '/usr/bin/g++',
+            'fortran' => '/usr/bin/gfortran'
+          }
+        end
         template = {
           'package_root' => '/opt/starman/packages',
           'install_root' => '/opt/starman/software',
@@ -67,7 +83,7 @@ module STARMAN
             'compiler_set_index' => 0,
             'mpi' => 'mpich'
           },
-          'compiler_set_0' => nil
+          'compiler_set_0' => default_compilers
         }
         write_file file_path, template.to_yaml
       end

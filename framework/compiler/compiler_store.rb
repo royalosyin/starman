@@ -53,11 +53,9 @@ module STARMAN
             next if not compiler
             flags = [compiler.default_flags]
             flags << compiler.flag(:pic)
-            flags << compiler.flag(:cxx11) if language == :cxx
             System::Shell.set flag_name, flags.join(' ')
           end
         end
-        System::Shell.append 'LDFLAGS', CompilerStore.compiler(:cxx).flag(:libcxx)
       end
 
       def unset_flags

@@ -20,11 +20,15 @@ module STARMAN
       :'relax-env' => OptionSpec.new(
         desc: 'Do not limit the content of the given environment variables.',
         accept_value: { string: '' }
+      ),
+      remote: OptionSpec.new(
+        desc: 'Specify the remote server to work with.',
+        accept_value: { string: '' }
       )
     }
 
     def self.run
-      @@options ||= {}
+      @@options = {}
       ARGV.each do |arg|
         if not defined? @@command and Command.constants.include? arg.capitalize.to_sym
           @@command = arg.to_sym
@@ -59,6 +63,7 @@ module STARMAN
         end
         options[name] = option_spec
       end
+      CLI.report_error 'No command specified!' unless defined? @@command
       @@options = eval("Command::#{@@command.capitalize.to_sym}").accepted_options.merge(@@options)
       @@options = CommonOptions.merge(@@options)
     end
@@ -81,8 +86,17 @@ module STARMAN
       @@options ||= {}
     end
 
+    def self.option option
+      return unless @@options[option]
+      @@options[option].value
+    end
+
     def self.has_option? option
       options.has_key? option
+    end
+
+    def self.packages= val
+      @@packages = val
     end
 
     def self.packages

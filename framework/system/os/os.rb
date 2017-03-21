@@ -37,6 +37,8 @@ module STARMAN
             @@os = CentOS.new
           when /Debian GNU\/Linux/
             @@os = Debian.new
+          when /NeoKylin release/
+            @@os = Neokylin.new
           when /SUSE Linux/
             @@os = SUSE.new
           when /Scientific Linux/
@@ -63,8 +65,8 @@ module STARMAN
         end
       end
 
-      def tag
-        "#{@@os.type}_#{@@os.version.major_minor}"
+      def tag version = nil
+        "#{@@os.type}_#{version || @@os.version.major_minor}"
       end
 
       def mac?
@@ -73,7 +75,15 @@ module STARMAN
 
       def linux?
         # FIXME: Check if aix can be covered in linux?
-        [:ubuntu, :fedora, :centos, :suse, :scientific_linux, :aix].include? @@os.type
+        [:ubuntu, :fedora, :centos, :neokylin, :suse, :scientific_linux, :aix].include? @@os.type
+      end
+
+      [:ubuntu, :fedora, :centos, :neokylin, :suse, :scientific_linux, :aix].each do |type|
+        class_eval <<-RUBY
+          def #{type}?
+            @@os.type == :#{type}
+          end
+        RUBY
       end
 
       def os_name

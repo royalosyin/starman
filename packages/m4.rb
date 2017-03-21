@@ -6,9 +6,17 @@ module STARMAN
     version '1.4.17'
 
     label :compiler_agnostic
+    label :system_first, command: 'm4', version: Proc.new { |cmd|
+      `#{cmd} --version`.match(/\d+\.\d+\.\d+?/)[0]
+    }, version_condition: '>= 1.4.16'
 
     def install
-      run './configure', '--disable-dependency-tracking', "--prefix=#{prefix}"
+      args = %W[
+        --prefix=#{prefix}
+        --disable-dependency-tracking
+      ]
+      args << 'ac_cv_type_struct_sched_param=yes' if OS.mac? and CompilerStore.compiler(:c).vendor == :gnu
+      run './configure', *args
       run 'make'
       run 'make', 'install'
     end

@@ -1,21 +1,25 @@
 module STARMAN
   class Hdf5 < Package
     homepage 'http://www.hdfgroup.org/HDF5'
-    url 'https://www.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8.16/src/hdf5-1.8.16.tar.bz2'
-    sha256 '13aaae5ba10b70749ee1718816a4b4bfead897c2fcb72c24176e759aec4598c6'
-    version '1.8.16'
+    url 'https://support.hdfgroup.org/ftp/HDF5/current18/src/hdf5-1.8.18.tar.bz2'
+    sha256 '01c6deadf4211f86922400da82c7a8b5b50dc8fc1ce0b5912de3066af316a48c'
+    version '1.8.18'
 
     option 'with-mpi', {
-      :desc => 'Build with parallel IO. MPI library is needed.',
-      :accept_value => { :boolean => false }
+      desc: 'Build with parallel IO. MPI library is needed.',
+      accept_value: { boolean: false }
+    }
+    option 'with-threadsafe', {
+      desc: 'Turn on thread safe.',
+      accept_value: { boolean: false }
     }
     option 'with-cxx', {
-      :desc => 'Build C++ API bindings.',
-      :accept_value => { :boolean => true }
+      desc: 'Build C++ API bindings.',
+      accept_value: { boolean: true }
     }
     option 'with-fortran', {
-      :desc => 'Build Fortran API bindings.',
-      :accept_value => { :boolean => true }
+      desc: 'Build Fortran API bindings.',
+      accept_value: { boolean: true }
     }
 
     language :c
@@ -27,6 +31,11 @@ module STARMAN
     depends_on :mpi if with_mpi?
 
     def install
+      # When use --enable-threadsafe option, C++ and Fortran bindings are not working properly.
+      if with_threadsafe?
+        option('with-cxx').value = false
+        option('with-fortran').value = false
+      end
       args = %W[
         --prefix=#{prefix}
         --enable-production
@@ -38,7 +47,7 @@ module STARMAN
         --enable-shared=yes
       ]
       if with_cxx?
-        args << '-enable-cxx'
+        args << '--enable-cxx'
       else
         args << '--disable-cxx'
       end
@@ -48,9 +57,10 @@ module STARMAN
       else
         args << '--disable-fortran'
       end
+      args << '--enable-threadsafe' if with_threadsafe?
       run './configure', *args
       run 'make'
-      run 'make', 'check' if not skip_test?
+      run 'make', 'check' unless skip_test?
       run 'make', 'install'
     end
   end

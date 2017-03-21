@@ -6,6 +6,7 @@ module STARMAN
     version '0.29.1'
 
     label :compiler_agnostic
+    label :system_first, command: 'pkg-config'
 
     depends_on :libiconv
 
@@ -15,6 +16,7 @@ module STARMAN
         --disable-debug
         --disable-host-tool
         --with-internal-glib
+        --with-libiconv=gnu
       ]
       System::Shell.append 'LDFLAGS', '-framework Foundation -framework Cocoa' if OS.mac?
       run './configure', *args

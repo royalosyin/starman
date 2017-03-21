@@ -3,18 +3,23 @@ module STARMAN
     class Upload
       def self.accepted_options
         {
-          :force => OptionSpec.new(
-            :desc => 'Force to upload packages no matter other conditions.',
-            :accept_value => { :boolean => false }
+          :'without-depends' => OptionSpec.new(
+            desc: 'Do not upload dependencies.',
+            accept_value: { boolean: false }
+          ),
+          force: OptionSpec.new(
+            desc: 'Force to upload packages no matter other conditions.',
+            accept_value: { boolean: false }
           )
         }
       end
 
-      def self.run
+      def self.__run__
         Storage.check_connection
-        CommandLine.packages.values.reverse_each do |package|
+        CommandLine.packages.each_value do |package|
           next if package.group_master
-          if not PackageInstaller.installed? package
+          next if CommandLine.options[:'without-depends'].value and not CommandLine.direct_packages.include? package.name
+          if not Install.installed? package
             CLI.report_error "Package #{CLI.red package.name} has not been installed!"
           end
           if Storage.uploaded? package
@@ -22,7 +27,7 @@ module STARMAN
               begin
                 Storage.delete! package
               rescue => e
-                CLI.report_error "Failed to delete #{CLI.red package.name} on Qiniu!\n#{e}"
+                CLI.report_error "Failed to delete #{CLI.red package.name} on #{CLI.blue Storage.adapter_name}!\n#{e}"
               end
             else
               CLI.report_warning "Package #{CLI.blue package.name} has been uploaded."
@@ -33,7 +38,7 @@ module STARMAN
             Storage.upload! package
             PackageBinary.write_record package
           rescue => e
-            CLI.report_error "Failed to upload #{CLI.red package.name} to Qiniu!\n#{e}"
+            CLI.report_error "Failed to upload #{CLI.red package.name} to #{CLI.blue Storage.adapter_name}!\n#{e}"
           end
         end
       end

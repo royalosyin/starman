@@ -4,8 +4,8 @@ STARMAN_ROOT=$(cd $(dirname $BASH_SOURCE) && pwd)
 OLD_DIR=$(pwd)
 
 # Check Ruby availability.
-RUBY_URL=http://cache.ruby-lang.org/pub/ruby/2.3/ruby-2.3.1.tar.gz
-RUBY_SHA1=c39b4001f7acb4e334cb60a0f4df72d434bef711
+RUBY_URL=https://cache.ruby-lang.org/pub/ruby/2.4/ruby-2.4.0.tar.gz
+RUBY_SHA=d44a3c50a0e742341ed3033d5db79d865151a4f4
 RUBY_PACKAGE=$(basename $RUBY_URL)
 RUBY_PACKAGE_DIR=$(basename $RUBY_PACKAGE .tar.gz)
 
@@ -19,16 +19,20 @@ fi
 
 function install_ruby
 {
+  if [[ -f "$STARMAN_ROOT/ruby/bin/ruby" ]]; then
+    export PATH=$STARMAN_ROOT/ruby/bin:$PATH
+    return
+  fi
   if [[ ! -d "$STARMAN_ROOT/ruby" ]]; then
-      mkdir "$STARMAN_ROOT/ruby"
+    mkdir "$STARMAN_ROOT/ruby"
   fi
   cd $STARMAN_ROOT/ruby
   if [[ ! -f $RUBY_PACKAGE ]]; then
-      wget $RUBY_URL -O $RUBY_PACKAGE
+    wget $RUBY_URL -O $RUBY_PACKAGE
   fi
-  if [[ "$SHASUM" == 'none' || "$($SHASUM $RUBY_PACKAGE | cut -d ' ' -f 1)" != "$RUBY_SHA1" ]]; then
-      echo '[Error]: Ruby is not downloaded successfully!'
-      exit 1
+  if [[ "$SHASUM" == 'none' || "$($SHASUM $RUBY_PACKAGE | cut -d ' ' -f 1)" != "$RUBY_SHA" ]]; then
+    echo '[Error]: Ruby is not downloaded successfully!'
+    exit 1
   fi
   rm -rf $RUBY_PACKAGE_DIR
   tar -xzf $RUBY_PACKAGE
@@ -42,6 +46,7 @@ function install_ruby
   make install 1>> $STARMAN_ROOT/ruby/out 2>&1
   cd $STARMAN_ROOT/ruby
   rm -rf $RUBY_PACKAGE_DIR
+  export PATH=$STARMAN_ROOT/ruby/bin:$PATH
 }
 
 if ! which ruby 2>&1 1> /dev/null 2>&1; then
@@ -59,17 +64,19 @@ cd "$OLD_DIR"
 
 # Check .bashrc in HOME.
 if [[ "$SHELL" =~ "bash" ]]; then
-	LINE="source $STARMAN_ROOT/shells/bashrc"
-	if ! grep "$LINE" ~/.bashrc 1>/dev/null; then
-		echo $LINE >> ~/.bashrc
-		echo "[Notice]: Append \"$LINE\" into ~/.bashrc. Reopen or relogin to the terminal please."
-	fi
-  LINE="export PATH=$STARMAN_ROOT/ruby/bin:\$PATH"
+  LINE="source $STARMAN_ROOT/shells/bashrc"
   if ! grep "$LINE" ~/.bashrc 1>/dev/null; then
-		echo $LINE >> ~/.bashrc
-		echo "[Notice]: Append \"$LINE\" into ~/.bashrc. Reopen or relogin to the terminal please."
-	fi
+    echo $LINE >> ~/.bashrc
+    echo "[Notice]: Append \"$LINE\" into ~/.bashrc. Reopen or relogin to the terminal please."
+  fi
+  if [[ -d "$STARMAN_ROOT/ruby/bin" ]]; then
+    LINE="export PATH=$STARMAN_ROOT/ruby/bin:\$PATH"
+    if ! grep "$LINE" ~/.bashrc 1>/dev/null; then
+      echo $LINE >> ~/.bashrc
+      echo "[Notice]: Append \"$LINE\" into ~/.bashrc. Reopen or relogin to the terminal please."
+    fi
+  fi
 else
-	echo "[Error]: Shell $SHELL is not supported currently!"
-	exit 1
+  echo "[Error]: Shell $SHELL is not supported currently!"
+  exit 1
 fi

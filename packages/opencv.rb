@@ -1,10 +1,10 @@
 module STARMAN
   class Opencv < Package
     homepage 'http://opencv.org'
-    url 'https://github.com/opencv/opencv/archive/3.1.0.tar.gz'
-    sha256 'f00b3c4f42acda07d89031a2ebb5ebe390764a133502c03a511f67b78bbd4fbf'
-    version '3.1.0'
-    filename 'opencv-3.1.0.tar.gz'
+    url 'https://github.com/opencv/opencv/archive/3.2.0.tar.gz'
+    sha256 'b9d62dfffb8130d59d587627703d5f3e6252dce4a94c1955784998da7a39dd35'
+    version '3.2.0'
+    filename 'opencv-3.2.0.tar.gz'
 
     option 'with-python2', {
       desc: 'Build with Python 2 support.',
@@ -38,9 +38,9 @@ module STARMAN
     depends_on :glog
 
     resource :contrib do
-      url 'https://github.com/opencv/opencv_contrib/archive/3.1.0.tar.gz'
-      sha256 'ef2084bcd4c3812eb53c21fa81477d800e8ce8075b68d9dedec90fef395156e5'
-      filename 'opencv-contrib-3.1.0.tar.gz'
+      url 'https://github.com/opencv/opencv_contrib/archive/3.2.0.tar.gz'
+      sha256 '1e2bb6c9a41c602904cc7df3f8fb8f98363a88ea564f2a087240483426bf8cbe'
+      filename 'opencv-contrib-3.2.0.tar.gz'
     end
 
     if OS.mac?
@@ -87,8 +87,8 @@ module STARMAN
       if with_python3?
         args << '-DBUILD_opencv_python3=ON'
         args << "-DPYTHON3_EXECUTABLE=#{Python3.bin}/python3"
-        args << "-DPYTHON3_LIBRARY=#{Python3.lib}/libpython3.5m.#{OS.soname}"
-        args << "-DPYTHON3_INCLUDE_DIR=#{Python3.inc}/python3.5m"
+        args << "-DPYTHON3_LIBRARY=#{Python3.lib}/libpython#{Python3.xy}m.#{OS.soname}"
+        args << "-DPYTHON3_INCLUDE_DIR=#{Python3.inc}/python#{Python3.xy}m"
       else
         args << '-DBUILD_opencv_python3=OFF'
         args << "-DPYTHON3_EXECUTABLE=''"
@@ -125,7 +125,6 @@ module STARMAN
 
       mkdir 'build' do
         run 'cmake', '..', *args
-        inreplace 'modules/sfm/CMakeFiles/opencv_sfm.dir/link.txt', '-lglog', ''
         run 'make'
         run 'make', 'install'
       end
